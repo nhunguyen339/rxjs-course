@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { Course } from "../model/course";
-import { interval, Observable, of, timer, noop } from "rxjs";
+import { interval, Observable, of, timer, noop, throwError } from "rxjs";
 import {
   catchError,
   delayWhen,
@@ -9,10 +9,12 @@ import {
   shareReplay,
   tap,
   filter,
+  finalize,
 } from "rxjs/operators";
 
 
 import { fetchCoursesHttp } from "../common/util";
+// Have minimun 3 ways to handle rxjs error: replace, rethrow, retry
 @Component({
   selector: "home",
   templateUrl: "./home.component.html",
@@ -25,7 +27,15 @@ export class HomeComponent implements OnInit {
     const http$ = fetchCoursesHttp("/api/courses");
     const courses$ = http$.pipe(
       map((res) => Object.values(res["payload"])),
-      shareReplay()
+      shareReplay(),
+      // catchError(error => {
+      //   return throwError(error)
+      // }),
+      retryWhen(error => error.pipe(
+        delayWhen(() => timer(3000))
+      )),
+      finalize(() => console.log('finnal')),
+      shareReplay(),
     );
 
     this.beginnerCourses$ = courses$.pipe(
@@ -42,6 +52,11 @@ export class HomeComponent implements OnInit {
 
         return courses.filter((course: Course) => course.category === 'ADVANCED')
       })
+    )
+
+    courses$.subscribe(
+      noop,
+      error => console.log('error in observer', error)
     )
   }
 }
