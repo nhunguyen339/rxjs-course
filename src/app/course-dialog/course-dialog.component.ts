@@ -20,6 +20,7 @@ import {
   mergeMap,
 } from "rxjs/operators";
 import { json } from "body-parser";
+import { StoreService } from "../common/store";
 
 @Component({
   selector: "course-dialog",
@@ -29,6 +30,7 @@ import { json } from "body-parser";
 export class CourseDialogComponent implements OnInit, AfterViewInit {
   form: FormGroup;
   course: Course;
+  store: StoreService;
   shouldDisabledBtn = false;
 
   @ViewChild("saveButton", { static: true }) saveButton: ElementRef;
@@ -38,9 +40,11 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<CourseDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) course: Course
+    @Inject(MAT_DIALOG_DATA) course: Course, store: StoreService
   ) {
     this.course = course;
+
+    this.store = store;
 
     this.form = fb.group({
       description: [course.description, Validators.required],
@@ -51,30 +55,31 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.form.valueChanges
-      .pipe(
-        filter(() => this.form.valid),
-        concatMap((changes) => this.saveChanges(changes))
-      )
-      .subscribe();
+    // this.form.valueChanges
+    //   .pipe(
+    //     filter(() => this.form.valid),
+    //     concatMap((changes) => this.saveChanges(changes))
+    //   )
+    //   .subscribe();
 
-    fromEvent(this.saveButton.nativeElement, "click")
-      .pipe(
-        exhaustMap(changes => this.saveChanges(changes))
-      )
-      .subscribe();
+    // fromEvent(this.saveButton.nativeElement, "click")
+    //   .pipe(
+    //     exhaustMap(changes => this.saveChanges(changes))
+    //   )
+    //   .subscribe();
   }
 
   saveChanges(changes) {
-    return from(
-      fetch(`/api/courses/${this.course.id}`, {
-        method: "PUT",
-        body: JSON.stringify(changes),
-        headers: {
-          "content-type": "application/json",
-        },
-      })
-    );
+    return this.store.save(this.course.id, changes);
+  }
+
+  submit() {
+    this.saveChanges(this.form.getRawValue()).subscribe(
+      () => {
+        this.close();
+      },
+      error => console.log(error)
+    )
   }
 
   ngAfterViewInit() {}

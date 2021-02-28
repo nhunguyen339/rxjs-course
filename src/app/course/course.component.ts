@@ -18,6 +18,7 @@ import {Lesson} from '../model/lesson';
 
 import { fetchCoursesHttp } from '../common/util';
 import { debug, RxJsLoggingLevel, setRxJsLoggingLevel } from '../common/debug';
+import { StoreService } from '../common/store';
 @Component({
     selector: 'course',
     templateUrl: './course.component.html',
@@ -33,7 +34,7 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
     @ViewChild('searchInput', { static: true }) input: ElementRef;
 
-    constructor(private route: ActivatedRoute) {
+    constructor(private route: ActivatedRoute, private store: StoreService) {
 
 
     }
@@ -42,12 +43,14 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
         this.courseId = this.route.snapshot.params['id'];
 
-        this.course$ = fetchCoursesHttp(`/api/courses/${this.courseId}`)
-                        .pipe(
-                            map((res: Course) => res),
-                            debug(RxJsLoggingLevel.INFOR, 'load course')
-                        )
-        setRxJsLoggingLevel(RxJsLoggingLevel.TRACE)
+        // this.course$ = fetchCoursesHttp(`/api/courses/${this.courseId}`)
+        //                 .pipe(
+        //                     map((res: Course) => res),
+        //                     debug(RxJsLoggingLevel.INFOR, 'load course')
+        //                 )
+
+        this.course$ = this.store.selectById(this.courseId);
+        setRxJsLoggingLevel(RxJsLoggingLevel.TRACE) // debug only
     }
 
     ngAfterViewInit() {

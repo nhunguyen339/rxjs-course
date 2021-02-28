@@ -63,7 +63,6 @@ import {MatMomentDateModule} from "@angular/material-moment-adapter";
         ReactiveFormsModule
     ],
     providers: [
-
     ],
     bootstrap: [AppComponent],
     entryComponents: [CourseDialogComponent]

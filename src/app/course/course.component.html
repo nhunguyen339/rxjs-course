@@ -3,6 +3,7 @@
     <ng-container *ngIf="(course$ | async) as course">
 
         <h2>{{course?.description}}</h2>
+        <p>{{ course?.category }}</p>
 
         <img class="course-thumbnail" [src]="course?.iconUrl">
 
@@ -33,9 +34,3 @@
 
 
 </div>
-
-
-
-
-
-
